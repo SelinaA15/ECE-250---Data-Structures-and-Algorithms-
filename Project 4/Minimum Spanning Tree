@@ -1,0 +1,266 @@
+#ifndef WEIGHTED_GRAPH_H
+#define WEIGHTED_GRAPH_H
+
+#include <iostream>
+#include <limits>
+#include "Exception.h"
+
+/*****************************************
+ * UW User ID:  s232ali
+ * Submitted for ECE 250
+ * Semester of Submission:  (Winter) 2022
+ *
+ * By submitting this file, I affirm that
+ * I am the author of all modifications to
+ * the provided code.
+ *****************************************/
+
+class Weighted_graph {
+	private:
+		static const double INF;
+		int nodes;
+		double** adjacencyMatrix;
+		int edgeCount; 
+		int* Degree_Array;
+		bool* checked;
+		bool DFS( int ) const;
+		void DFSVISIT ( int ) const;
+		// your choice
+		//call DFS and DFS visit in the private 
+
+	public:
+		Weighted_graph( int = 50 );
+		~Weighted_graph();
+
+		int degree( int ) const;
+		int edge_count() const;
+		double adjacent( int, int ) const;
+		double minimum_spanning_tree( int ) const;
+		bool is_connected() const;
+
+		void insert( int, int, double );
+
+	// Friends
+
+	friend std::ostream &operator << ( std::ostream &, Weighted_graph const & );
+};
+
+const double Weighted_graph::INF = std::numeric_limits<double>::infinity();
+
+Weighted_graph::Weighted_graph(int n){
+
+	nodes = n; 
+	edgeCount = 0;
+
+	if (n < 0 ){
+		throw illegal_argument(); 
+	}
+  
+	adjacencyMatrix = new double*[n];
+	//create all adjacency matrix
+	for (int x = 0; x < n; x++){
+		adjacencyMatrix[x] = new double[n];
+	}
+
+	//intialize all edges to false
+	for (int i = 0; i < n; i++){
+		for (int j = 0; j < n; j++){
+			//means that there is no edges in the matrix 
+			adjacencyMatrix[i][j] = INF;
+		}
+
+	}
+	checked = new bool[n];
+	 Degree_Array = new int[n]; 
+
+	for (int a = 0; a < n; a++){
+		Degree_Array[a] = 0;
+	}
+}
+
+Weighted_graph::~Weighted_graph(){
+	delete[] Degree_Array;
+	delete[] checked;
+	for (int i = 0; i < nodes; i++){
+		delete[] adjacencyMatrix[i];
+	}
+	delete[] adjacencyMatrix;
+}
+
+int Weighted_graph::degree(int n) const {
+if (n < 0 || n > nodes-1){
+		throw illegal_argument(); 
+}
+return Degree_Array[n];
+}
+
+int  Weighted_graph::edge_count() const {
+	return edgeCount;
+}
+
+double  Weighted_graph::adjacent(int m, int n) const{
+
+	if (n < 0 || n > nodes-1){
+		throw illegal_argument(); 
+	}
+
+	if (m < 0 || m > nodes-1){
+		throw illegal_argument(); 
+	}
+
+	if (m == n) {
+		return 0;
+	}
+	else if (adjacencyMatrix[n][m] == INF && adjacencyMatrix[m][n] == INF){
+		return INF;
+	}
+	else if (adjacencyMatrix[n][m] == adjacencyMatrix[m][n]){
+		return adjacencyMatrix[n][m];
+	}
+} 
+
+double  Weighted_graph::minimum_spanning_tree (int m) const {
+
+	double key[nodes];
+
+	bool MSTSet[nodes];
+
+	int current_node = m;
+
+	double minValue = INF; 
+
+	int minIndex; 
+
+	double totalWeight= 0; 
+
+	
+	if (m < 0 || m > nodes-1){
+		throw illegal_argument(); 
+	}
+
+	/*intialize all keys weights to infinty and all nodes as not included*/
+	for (int i = 0; i < nodes; i++){
+		key[i] = INF;
+		MSTSet[i] = false;
+	}	
+
+	/*set weight of first node to zero*/
+	key[m] = 0;
+
+	int j = 0;
+
+	while (j<nodes){
+		/*this node is now in the MST*/
+		MSTSet[current_node] = true; 
+
+
+		/*find the mininum weight by traversing through the adjacency matrix*/
+		for (int a = 0; a < nodes; a++){
+			/*find the smallest weight and put it into the key array*/
+			if (adjacencyMatrix[current_node][a]< key[a]){
+				key[a] = adjacencyMatrix[current_node][a]; 
+			}
+
+		}
+		
+		minValue = INF; 
+		
+		for (int x = 0; x < nodes; x++){
+			if (minValue>key[x] && MSTSet[x] == false){
+				minValue = key[x];
+				minIndex = x;
+			}
+		}
+		if (minValue == INF){
+			return totalWeight; 
+		}
+		else {
+			current_node = minIndex;
+			totalWeight = totalWeight + minValue;
+		}
+	j++;
+	}
+	return totalWeight;
+}
+
+bool  Weighted_graph::is_connected() const {
+	return DFS(0);
+}
+
+void  Weighted_graph::insert (int m, int n, double w){
+	/*degree array 
+		increment m and n in degree array 
+	*/
+	/*need to add if the edges do not exist*/
+	if (w < 0 || w == INF || m == n){
+		throw illegal_argument(); 
+	}
+
+	if (n < 0 || n > nodes-1){
+		throw illegal_argument(); 
+	}
+
+	if (m < 0 || m > nodes-1){
+		throw illegal_argument(); 
+	}
+
+	if (w == 0 && adjacencyMatrix[n][m]!= INF){
+		adjacencyMatrix[n][m] = INF;
+		adjacencyMatrix[m][n] = INF;
+		edgeCount--;
+		Degree_Array[m]--;
+		Degree_Array[n]--;
+		 
+	}
+
+	else if (adjacencyMatrix[n][m] != INF && adjacencyMatrix[m][n] != INF){
+		adjacencyMatrix[n][m] = w;
+		adjacencyMatrix[m][n] = w;
+	}
+	
+	else if (w != 0 && adjacencyMatrix[n][m]== INF) {
+		adjacencyMatrix[n][m] = w;
+		adjacencyMatrix[m][n] = w;
+		Degree_Array[m]++;
+		Degree_Array[n]++;
+		edgeCount++;
+	}
+}
+
+std::ostream &operator << ( std::ostream &out, Weighted_graph const &graph ) {
+	return out;
+}
+
+bool Weighted_graph::DFS( int n) const {
+	bool connected = true;
+
+	/*set all values in the boolean checked array to false */
+	for (int j = 0; j < nodes; j++){
+		checked[j] = false;
+	}
+
+	if (nodes == 0){
+		return false;
+	}
+
+	DFSVISIT(n);
+
+	for (int i = 0 ; i < nodes; i++){	
+		if (checked[i] != true){
+			connected = false;
+		}
+	}
+	return connected;
+}
+
+ void Weighted_graph::DFSVISIT(int n) const{
+ 	checked[n] = true;
+ 	for (int i = 0; i < nodes; i++){
+ 		if (adjacencyMatrix[n][i] != INF && checked[i] == false){
+ 			DFSVISIT(i);
+ 		}
+ 	}
+ }
+
+
+#endif
