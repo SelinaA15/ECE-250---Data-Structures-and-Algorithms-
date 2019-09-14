@@ -141,8 +141,6 @@ int i = 0;
  	root_node-> insert(str, 0);
 	trie_size = trie_size+1;
 	return true;	
-
-//	return false;
 }
 
 bool Trie::erase( std::string const &str ) {
@@ -154,7 +152,6 @@ int i = 0;
 		}
 		i++;
 	}
-
 
 	if (!member(str)){
 		return false;
@@ -176,10 +173,8 @@ int i = 0;
 		root_node->erase(str, 0, root_node);
     	trie_size = trie_size -1; 
 	}
-	    
- 
+	     
 return true;
-
 }
 
 void Trie::clear() {
@@ -193,12 +188,8 @@ void Trie::clear() {
     }
 }
 
-
-
 std::ostream &operator<<( std::ostream &out, Trie const &trie ) {
-
 	return out;
 }
-
 
 #endif
